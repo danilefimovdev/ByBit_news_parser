@@ -12,7 +12,6 @@ from fake_useragent import UserAgent
 user_agent = UserAgent()
 API_URL = "https://api2.bybit.com/announcements/api/search/v1/index/announcement-posts_en-us"
 HEADERS = {
-    'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.76",
     'Origin': 'https://announcements.bybit.com',
     'Accept': 'application/json, text/plain, */*'
 }
@@ -166,7 +165,11 @@ def change_headers():
     """
     Функция изменяет заголовки и добавляет новые во избежание блокировки или кэширования CDN
     """
+
     option = random.randint(0, 5)
+
+    ua = user_agent.random
+    HEADERS["User-Agent"] = ua
     header_options = [
         {'Time': str(datetime.utcnow())},
         {'Exchange': random.choice(("ByBIT", ))},
@@ -175,7 +178,6 @@ def change_headers():
         {'Currency': random.choice(("BTC", "ETH", "XRP", "DASH", "SOL", "BNB", "ADA", "LTC", ))},
     ]
     header_items = random.sample(header_options, option)
-    print(header_items)
     for item in header_items:
         for header_name, value in item.items():
             HEADERS[header_name] = value
