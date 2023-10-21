@@ -240,7 +240,7 @@ async def create_new_headers() -> dict:
 
 
 if __name__ == '__main__':
-    page_number = 1
+    page_number = 3
     try:
         asyncio.run(main(from_page_number=page_number))
     except KeyboardInterrupt or RuntimeError:
