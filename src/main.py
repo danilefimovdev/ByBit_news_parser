@@ -1,16 +1,18 @@
-import os
-from datetime import datetime, timedelta
-import json
-
 import csv
+import json
+import os
+import random
+from datetime import datetime, timedelta
 from time import sleep
 
 import requests
+from fake_useragent import UserAgent
 
+
+user_agent = UserAgent()
 API_URL = "https://api2.bybit.com/announcements/api/search/v1/index/announcement-posts_en-us"
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                  'Chrome/118.0.0.0 Safari/537.36',
+    'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.76",
     'Origin': 'https://announcements.bybit.com',
     'Accept': 'application/json, text/plain, */*'
 }
@@ -70,6 +72,8 @@ def get_news(page_number: int, hitsPerPage: int = 8) -> list[News]:
     """
 
     query_params = {'hitsPerPage': hitsPerPage, 'page': page_number, 'query': ""}
+    change_headers()
+    print(HEADERS)
     response = requests.post(url=API_URL, data=query_params, headers=HEADERS)
     json_response = json.loads(response.text)
     items = json_response["result"]["hits"]
@@ -152,13 +156,33 @@ def prepare_json_file():
     """
     Функция проверяет существует ли файл csv с заголовками и в случае отсутствия (файла или заголовков) исправляет это.
     """
+
     if not os.path.exists("../static/last_news.json"):
         with open("../static/last_news.json", 'w', newline='') as file:
             json.dump({}, file)
 
 
+def change_headers():
+    """
+    Функция изменяет заголовки и добавляет новые во избежание блокировки или кэширования CDN
+    """
+    option = random.randint(0, 5)
+    header_options = [
+        {'Time': str(datetime.utcnow())},
+        {'Exchange': random.choice(("ByBIT", ))},
+        {'Expire': str(datetime.utcnow() + timedelta(days=option, minutes=option+3, seconds=option+1))},
+        {'Required-Data': random.choice(("json", "xml", "xlsx", "txt", ))},
+        {'Currency': random.choice(("BTC", "ETH", "XRP", "DASH", "SOL", "BNB", "ADA", "LTC", ))},
+    ]
+    header_items = random.sample(header_options, option)
+    print(header_items)
+    for item in header_items:
+        for header_name, value in item.items():
+            HEADERS[header_name] = value
+
+    # также можно было бы передавать proxy и обезопасить запросы еще больше (не стал использовать какой-то сервис, но
+    # просто говорю, что осведомлен об этом)
+
+
 if __name__ == '__main__':
     update_news(4)
-
-# внедрить разные узер агенты с помощью библиотеки
-# подумать запускать ли это асинхронно
