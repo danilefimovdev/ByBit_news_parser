@@ -5,6 +5,7 @@ from datetime import datetime
 import aiohttp
 
 from src.csv_utils import prepare_csv_file
+from src.json_utils import create_json_several_news_files
 from src.news_utils import check_new_news
 
 
@@ -17,6 +18,7 @@ async def main(from_page_number: int = 0):
     """
 
     await prepare_csv_file()
+    await create_json_several_news_files()
 
     async with aiohttp.ClientSession() as session:
         if from_page_number > 1:

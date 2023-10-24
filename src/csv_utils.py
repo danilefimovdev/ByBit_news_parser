@@ -4,16 +4,16 @@ import os
 import aiofiles
 
 from src.config import CSV_FILE_PATH, required_keys
+from src.json_utils import add_to_last_several_news
 from src.models import News
 from src.utils import get_datetime_from_seconds
 
 
-async def add_note_to_te_csv(news: News) -> bool:
+async def add_note_to_csv(news: News) -> bool:
     """
     Функция создает новую запись новости в csv файле.
     :param news: новость, которую будем записывать.
     """
-
     try:
         note = [value for value in news.to_dict().values()]
         timestamp = await get_datetime_from_seconds(note.pop(1))
@@ -22,6 +22,9 @@ async def add_note_to_te_csv(news: News) -> bool:
         async with aiofiles.open(CSV_FILE_PATH, 'a', newline='', encoding='utf-8') as csv_file:
             csv_writer = csv.writer(csv_file)
             await csv_writer.writerow(note)
+
+        await add_to_last_several_news(news=news)
+
         return True
     except Exception as e:
         print(f"Error with csv: {str(e)}")

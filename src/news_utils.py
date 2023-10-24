@@ -3,9 +3,9 @@ import asyncio
 from aiohttp import ClientSession
 
 from src.config import API_URL, PAUSE_VALUE
-from src.csv_utils import add_note_to_te_csv
+from src.csv_utils import add_note_to_csv
 from src.headers_utils import create_new_headers
-from src.json_utils import rewrite_the_newest_news, get_news_from_json
+from src.json_utils import rewrite_the_newest_news, get_last_news_from_json, get_last_several_news
 from src.models import News
 
 
@@ -47,9 +47,13 @@ async def check_is_it_newer_news(news: News):
     :param news: новость, которую мы будем проверять
     """
 
-    json_data = await get_news_from_json()
+    json_data = await get_last_news_from_json()
     newest_news = News(**json_data) if json_data else None
-    if not newest_news or (news.date_timestamp >= newest_news.date_timestamp and news.title != newest_news.title):
+    if not newest_news or (
+            news.date_timestamp >= newest_news.date_timestamp
+            and news.title != newest_news.title
+            and news.url not in await get_last_several_news()):
+
         print("New news: ", news.to_dict())
-        await add_note_to_te_csv(news)
+        await add_note_to_csv(news)
         await rewrite_the_newest_news(news)
